@@ -1,1 +1,47 @@
-web
+name: Flutter Web Build
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:  # 添加手动触发工作流的配置
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # 设置Dart环境
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1
+        
+      # 设置Flutter环境
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.5'
+          channel: 'stable'
+
+      # 安装依赖
+      - name: Install dependencies
+        run: flutter pub get
+        
+      # 构建Flutter Web应用
+      - name: Build Flutter Web
+        run: flutter build web --release
+
+      # 将构建产物打包成zip文件
+      - name: Package Web Build
+        run: |
+          cd build/web
+          zip -r web_build.zip .
+
+      # 上传构建产物为工件
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Web_Build_Artifact
+          path: build/web/web_build.zip
